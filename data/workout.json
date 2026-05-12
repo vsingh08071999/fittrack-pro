@@ -1,0 +1,17 @@
+[
+    {
+        "exercise": "Bench Press",
+        "sets": 4,
+        "reps": 10
+    },
+    {
+        "exercise": "Biceps Curl",
+        "sets": 3,
+        "reps": 12
+    },
+    {
+        "exercise": "Lat Pull down",
+        "sets": 4,
+        "reps": 8
+    }
+]
