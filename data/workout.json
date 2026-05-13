@@ -1,17 +1,1 @@
-[
-    {
-        "exercise": "Bench Press",
-        "sets": 4,
-        "reps": 10
-    },
-    {
-        "exercise": "Biceps Curl",
-        "sets": 3,
-        "reps": 12
-    },
-    {
-        "exercise": "Lat Pull down",
-        "sets": 4,
-        "reps": 8
-    }
-]
+[{"exercise":"Bench Press","sets":3,"reps":16},{"exercise":"Biceps Curl","sets":3,"reps":12},{"exercise":"Lat Pull down","sets":4,"reps":15},{"exercise":"Triceps Rope Extension","sets":3,"reps":15},{"exercise":"Chest Bumbbell Press","sets":4,"reps":10},{"exercise":"Dumbbell curl","sets":3,"reps":12},{"exercise":"Leg Squats","sets":3,"reps":12}]

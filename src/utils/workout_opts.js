@@ -16,7 +16,9 @@ const addexercise = function (exercise, sets, reps) {
             sets: sets,
             reps: reps
         })
+        saveExercise(loadexercise)
         console.log(chalk.green("Exercise with exercise name : " + exercise + " added successfully!!"))
+        return "Added Successfully!!!"
     } else {
         const duplicate = loadexercise.filter((item) => item.exercise === exercise)
         if (duplicate.length === 0) {
@@ -25,37 +27,66 @@ const addexercise = function (exercise, sets, reps) {
                 sets: sets,
                 reps: reps
             })
+            saveExercise(loadexercise)
             console.log(chalk.green("Exercise with exercise name : " + exercise + "added successfully!!"))
+            return "Added Successfully!!!"
         } else {
             console.log(chalk.red("Duplicate exercise with exercise name : " + exercise))
+            return "Already exist with the same name of exercise."
         }
     }
-    saveExercise(loadexercise)
+
 }
 
 
 const removeexercise = function (exerciseName) {
     const loadexercise = loadExercise()
-    if (loadexercise.find(item => item.exercise === exerciseName)) {
-        const index = loadexercise.findIndex(note => note.exercise === exerciseName)
-        if (index != -1) {
-            loadexercise.splice(index)
-            saveExercise(loadexercise)
-            console.log(chalk.green("Exercise Deleted Successfully!!!"))
-        }
+    if (loadexercise.find(item => item.exercise.toLowerCase() === exerciseName.toLowerCase())) {
+        // const index = loadexercise.findIndex(note => note.exercise.toLowerCase() === exerciseName.toLowerCase())
+        // if (index != -1) {
+        //     loadexercise.splice(index)
+        //     saveExercise(loadexercise)
+        //     console.log(chalk.green("Exercise Deleted Successfully!!!"))
+        // }
+        const updatedData = loadexercise.filter(item => item.exercise.toLowerCase() != exerciseName.toLowerCase())
+        saveExercise(updatedData)
+        return "Deleted Successfully!!!"
     } else {
         console.log(chalk.red("Exercise not found!!!   Exercise: " + exerciseName))
+        return `There is no workout exercise with name of ${exerciseName}.`
+    }
+
+}
+
+
+const updateexercise = function (exerciseName, sets, reps) {
+    const loadexercise = loadExercise()
+    if (loadexercise.find(item => item.exercise.toLowerCase() === exerciseName.toLowerCase())) {
+        const index = loadexercise.findIndex(note => note.exercise.toLowerCase() === exerciseName.toLowerCase())
+        if (index != -1) {
+            loadexercise[index].exercise = exerciseName
+            loadexercise[index].sets = sets
+            loadexercise[index].reps = reps
+            console.log(chalk.green("Exercise Updated Successfully!!!"))
+        }
+        saveExercise(loadexercise)
+        return "Updated Successfully!!!"
+    } else {
+        console.log(chalk.red("Exercise not found!!!   Exercise: " + exerciseName))
+        return `There is no workout exercise with name of ${exerciseName}.`
     }
 
 }
 
 const readexercise = function (exerciseName) {
     const loadexercise = loadExercise()
-    if (loadexercise.find((item) => item.exercise === exerciseName)) {
-        console.log(chalk.green("Exercise is already exist!!!  " + exerciseName))
+    const exerciseData = loadexercise.find((item) => item.exercise.toLowerCase() === exerciseName.toLowerCase())
+    if (exerciseData === undefined) {
+        return { message: "There is no exercise name in the list" }
     } else {
-        console.log(chalk.red("Exercise not found!!! : " + exerciseName))
+        return exerciseData
     }
+
 }
 
 const listexercise = function () {
@@ -63,9 +94,7 @@ const listexercise = function () {
     if (loadexercise.length === 0) {
         console.log(chalk.red("There is no item in the exercise."))
     } else {
-        loadexercise.forEach(element => {
-            console.log(element.exercise + " - " + element.sets + " X " + element.reps)
-        });
+        return loadexercise
     }
 }
 
@@ -93,5 +122,7 @@ module.exports = {
     addExercise: addexercise,
     removeExercise: removeexercise,
     readExercise: readexercise,
-    listExercise: listexercise
+    listExercise: listexercise,
+    load_exercise: loadExercise,
+    updateExercise: updateexercise
 }
