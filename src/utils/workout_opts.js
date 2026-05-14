@@ -1,14 +1,14 @@
 const chalk = require('chalk')
-const fs = require('fs')
+const fs = require('fs').promises
 const path = require('path')
 const getworkout = function () {
     return "Your workout is ......"
 }
 
 
-const addexercise = function (exercise, sets, reps) {
+const addexercise = async (exercise, sets, reps) => {
     console.log(exercise + sets + reps)
-    const loadexercise = loadExercise()
+    const loadexercise = await loadExercise()
     // console.log("Exercise from file is : " + loadexercise)
     if (loadexercise.length === 0) {
         loadexercise.push({
@@ -16,7 +16,7 @@ const addexercise = function (exercise, sets, reps) {
             sets: sets,
             reps: reps
         })
-        saveExercise(loadexercise)
+        await saveExercise(loadexercise)
         console.log(chalk.green("Exercise with exercise name : " + exercise + " added successfully!!"))
         return "Added Successfully!!!"
     } else {
@@ -27,7 +27,7 @@ const addexercise = function (exercise, sets, reps) {
                 sets: sets,
                 reps: reps
             })
-            saveExercise(loadexercise)
+            await saveExercise(loadexercise)
             console.log(chalk.green("Exercise with exercise name : " + exercise + "added successfully!!"))
             return "Added Successfully!!!"
         } else {
@@ -39,8 +39,8 @@ const addexercise = function (exercise, sets, reps) {
 }
 
 
-const removeexercise = function (exerciseName) {
-    const loadexercise = loadExercise()
+const removeexercise = async (exerciseName) => {
+    const loadexercise = await loadExercise()
     if (loadexercise.find(item => item.exercise.toLowerCase() === exerciseName.toLowerCase())) {
         // const index = loadexercise.findIndex(note => note.exercise.toLowerCase() === exerciseName.toLowerCase())
         // if (index != -1) {
@@ -49,7 +49,7 @@ const removeexercise = function (exerciseName) {
         //     console.log(chalk.green("Exercise Deleted Successfully!!!"))
         // }
         const updatedData = loadexercise.filter(item => item.exercise.toLowerCase() != exerciseName.toLowerCase())
-        saveExercise(updatedData)
+        await saveExercise(updatedData)
         return "Deleted Successfully!!!"
     } else {
         console.log(chalk.red("Exercise not found!!!   Exercise: " + exerciseName))
@@ -59,8 +59,8 @@ const removeexercise = function (exerciseName) {
 }
 
 
-const updateexercise = function (exerciseName, sets, reps) {
-    const loadexercise = loadExercise()
+const updateexercise = async (exerciseName, sets, reps) => {
+    const loadexercise = await loadExercise()
     if (loadexercise.find(item => item.exercise.toLowerCase() === exerciseName.toLowerCase())) {
         const index = loadexercise.findIndex(note => note.exercise.toLowerCase() === exerciseName.toLowerCase())
         if (index != -1) {
@@ -69,7 +69,7 @@ const updateexercise = function (exerciseName, sets, reps) {
             loadexercise[index].reps = reps
             console.log(chalk.green("Exercise Updated Successfully!!!"))
         }
-        saveExercise(loadexercise)
+        await saveExercise(loadexercise)
         return "Updated Successfully!!!"
     } else {
         console.log(chalk.red("Exercise not found!!!   Exercise: " + exerciseName))
@@ -78,8 +78,8 @@ const updateexercise = function (exerciseName, sets, reps) {
 
 }
 
-const readexercise = function (exerciseName) {
-    const loadexercise = loadExercise()
+const readexercise = async (exerciseName) => {
+    const loadexercise = await loadExercise()
     const exerciseData = loadexercise.find((item) => item.exercise.toLowerCase() === exerciseName.toLowerCase())
     if (exerciseData === undefined) {
         return { message: "There is no exercise name in the list" }
@@ -89,8 +89,8 @@ const readexercise = function (exerciseName) {
 
 }
 
-const listexercise = function () {
-    const loadexercise = loadExercise()
+const listexercise = async () => {
+    const loadexercise = await loadExercise()
     if (loadexercise.length === 0) {
         console.log(chalk.red("There is no item in the exercise."))
     } else {
@@ -98,17 +98,17 @@ const listexercise = function () {
     }
 }
 
-const saveExercise = function (exerciseList) {
-    console.log("Save Exercise is : " + exerciseList)
+const saveExercise = async (exerciseList) => {
+    // console.log("Save Exercise is : " + exerciseList)
     const stringBuffered = JSON.stringify(exerciseList)
     const filePath = path.join(__dirname, '../../data/workout.json')
-    fs.writeFileSync(filePath, stringBuffered)
+    await fs.writeFile(filePath, stringBuffered)
 }
 
-const loadExercise = function () {
+const loadExercise = async () => {
     try {
         const filePath = path.join(__dirname, '../../data/workout.json')
-        const buffered = fs.readFileSync(filePath).toString()
+        const buffered = (await fs.readFile(filePath)).toString()
         return JSON.parse(buffered)
     } catch (e) {
         return []
