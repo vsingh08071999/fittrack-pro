@@ -23,7 +23,7 @@ const getAllWorkout = async (req, res) => {
         }
     } catch (e) {
         res.status(500).send({
-            error: "Inernal server error"
+            error: "Internal server error"
         })
     }
 }
@@ -49,7 +49,7 @@ const getWorkoutByName = async (req, res) => {
         return res.status(200).send(workout)
     } catch (e) {
         res.status(500).send({
-            error: "Inernal server error"
+            error: "Internal server error"
         })
     }
 }
@@ -71,7 +71,7 @@ const createWorkout = async (req, res) => {
         // })
     } catch (e) {
         res.status(500).send({
-            error: "Inernal server error"
+            error: "Internal server error"
         })
     }
 }
@@ -99,7 +99,7 @@ const deleteWorkout = async (req, res) => {
         })
     } catch (e) {
         res.status(500).send({
-            error: "Inernal server error"
+            error: "Internal server error"
         })
     }
 }
@@ -142,7 +142,7 @@ const updateWorkout = async (req, res) => {
         })
     } catch (e) {
         return res.status(500).send({
-            error: "Inernal server error"
+            error: "Internal server error"
         })
     }
 }
