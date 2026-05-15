@@ -2,9 +2,10 @@ const express = require('express')
 const app = express()
 const workoutRoutes = require('./routes/workout_routes')
 const mongoose = require('./db/mongoose')
+require('dotenv').config()
 app.use(express.json())
 app.use(workoutRoutes)
-const port = 3000
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log("Server is running on the port: " + port)
 })

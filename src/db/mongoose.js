@@ -1,3 +1,13 @@
 const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://vsingh_db_user:Vsingh%4008@fittrackcluster.oh49lg5.mongodb.net/?appName=FitTrackCluster')
-console.log("MongoDB Connected")
+require('dotenv').config()
+const mongo_db_url = process.env.MONGO_URI;
+mongoose.connect(mongo_db_url,
+    {
+        serverSelectionTimeoutMS: 5000
+    }
+).then(() => {
+    console.log("MongoDB Connected")
+})
+    .catch((e) => {
+        console.log("Connection Error:", e)
+    })

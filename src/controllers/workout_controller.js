@@ -1,5 +1,5 @@
 const workout = require('../utils/workout_opts')
-
+const WorkoutModel = require('../models/workout')
 
 // app.get('', (req, res) => {
 //     res.send({
@@ -9,13 +9,17 @@ const workout = require('../utils/workout_opts')
 
 const getAllWorkout = async (req, res) => {
     try {
-        const loadexercise = await workout.load_exercise()
-        if (loadexercise.length === 0) {
+        // File System
+        // const loadexercise = await workout.load_exercise()
+
+        // MongoDB
+        const workoutList = await WorkoutModel.find()
+        if (workoutList.length === 0) {
             return res.status(404).send({
                 error: "Data not found!!!"
             })
         } else {
-            return res.status(200).send(loadexercise)
+            return res.status(200).send(workoutList)
         }
     } catch (e) {
         res.status(500).send({
@@ -27,9 +31,22 @@ const getAllWorkout = async (req, res) => {
 
 const getWorkoutByName = async (req, res) => {
     try {
-        console.log("Param is : " + req.params.exercise)
-        const data = await workout.readExercise(req.params.exercise)
-        res.send(data)
+        // File System
+        // console.log("Param is : " + req.params.exercise)
+        // const data = await workout.readExercise(req.params.exercise)
+        // res.send(data)
+
+        // MongoDB
+        const workout = await WorkoutModel.findOne({
+            exercise: req.params.exercise
+        })
+        console.log("Return Data:  ", workout)
+        if (!workout) {
+            return res.status(404).send({
+                error: "Workout not found"
+            })
+        }
+        return res.status(200).send(workout)
     } catch (e) {
         res.status(500).send({
             error: "Inernal server error"
@@ -41,30 +58,17 @@ const getWorkoutByName = async (req, res) => {
 const createWorkout = async (req, res) => {
     try {
         const { exercise, sets, reps } = req.body
-        // if (!exercise || !sets || !reps) {
-        //     return res.status(400).send({
-        //         error: "All fields are required."
-        //     })
-        // }
-        // if (typeof exercise != 'string') {
-        //     return res.status(400).send({
-        //         error: "Exercise must be a string"
-        //     })
-        // }
-        // if (typeof sets != 'number' || typeof reps != 'number') {
-        //     return res.status(400).send({
-        //         error: "Sets and reps must be number"
-        //     })
-        // }
-        // if (sets <= 0 || reps <= 0) {
-        //     return res.status(400).send({
-        //         error: "Sets and reps must be greater than 0"
-        //     })
-        // }
-        const data = await workout.addExercise(exercise, sets, reps)
-        res.status(200).send({
-            message: data
-        })
+        // MongoDB
+        const workout = new WorkoutModel(req.body)
+        await workout.save()
+        console.log("Saved Data in MongoDB:   ", workout)
+        res.status(201).send(workout)
+
+        // File System
+        // const data = await workout.addExercise(exercise, sets, reps)
+        // res.status(200).send({
+        //     message: data
+        // })
     } catch (e) {
         res.status(500).send({
             error: "Inernal server error"
@@ -74,10 +78,24 @@ const createWorkout = async (req, res) => {
 
 const deleteWorkout = async (req, res) => {
     try {
-        console.log("Param is : " + req.params.exercise)
-        const data = await workout.removeExercise(req.params.exercise)
-        res.status(200).send({
-            message: data
+        // File System
+        // console.log("Param is : " + req.params.exercise)
+        // const data = await workout.removeExercise(req.params.exercise)
+        // res.status(200).send({
+        //     message: data
+        // })
+
+        // MongoDB
+        const workout = await WorkoutModel.findOneAndDelete({
+            exercise: req.params.exercise
+        })
+        if (!workout) {
+            return res.status(404).send({
+                error: "Workout not found"
+            })
+        }
+        return res.status(200).send({
+            message: "Workout Deleted Successfully!!!"
         })
     } catch (e) {
         res.status(500).send({
@@ -90,30 +108,37 @@ const deleteWorkout = async (req, res) => {
 const updateWorkout = async (req, res) => {
     try {
         const { exercise, sets, reps } = req.body
-        // if (!exercise || !sets || !reps) {
-        //     return res.status(400).send({
-        //         error: "All fields are required."
-        //     })
-        // }
-        // if (typeof exercise != 'string') {
-        //     return res.status(400).send({
-        //         error: "Exercise must be a string"
-        //     })
-        // }
-        // if (typeof sets != 'number' || typeof reps != 'number') {
-        //     return res.status(400).send({
-        //         error: "Sets and reps must be number"
-        //     })
-        // }
-        // if (sets <= 0 || reps <= 0) {
-        //     return res.status(400).send({
-        //         error: "Sets and reps must be greater than 0"
-        //     })
-        // }
+        // File System
+        // const data = await workout.updateExercise(exercise, sets, reps)
+        // return res.status(200).send({
+        //     message: data
+        // })
+        console.log("Exercise is :  " + exercise)
+        // MongoDB
+        const updatedWorkout = await WorkoutModel.findOneAndUpdate(
+            {
+                exercise: exercise
+            },
+            {
+                sets: sets,
+                reps: reps
+            },
+            {
+                // new: true,
+                returnDocument: 'after',
+                runValidators: true
+            }
 
-        const data = await workout.updateExercise(exercise, sets, reps)
+        )
+        console.log("Updated Workout:   ", updatedWorkout)
+        if (!updatedWorkout) {
+            return res.status(404).send({
+                error: 'Workout not found'
+            })
+        }
         return res.status(200).send({
-            message: data
+            message: "Updated Successfully!!!",
+            updatedWorkout
         })
     } catch (e) {
         return res.status(500).send({
