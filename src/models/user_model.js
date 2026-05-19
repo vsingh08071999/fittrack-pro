@@ -20,12 +20,20 @@ const userSchema = mongoose.Schema({
         trim: true,
         unique: true,
         lowercase: true,
-        validator(value) {
+        validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error('Invalid email')
             }
         }
-    }
+    },
+    tokens: [
+        {
+            token: {
+                type: String,
+                required: true
+            }
+        }
+    ]
 })
 userSchema.pre('save', async function () {
     const user = this
@@ -39,6 +47,8 @@ userSchema.methods.generateAuthToken = async function () {
     const token = jwt.sign({
         _id: user._id.toString()
     }, process.env.JWT_SECRET)
+    user.tokens = user.tokens.concat({ token })
+    await user.save()
     return token
 }
 
@@ -55,5 +65,14 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
     return user
 }
+
+userSchema.methods.toJSON = function () {   // Delete password & tokens from json response you get
+    const user = this
+    const userObject = user.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
+
 const User = mongoose.model('User', userSchema)
 module.exports = User

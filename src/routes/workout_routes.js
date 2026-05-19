@@ -6,9 +6,9 @@ const auth = require('../middleware/auth')
 
 router.get('/workout', auth, controller.getAllWorkoutData)
 router.get('/workout/:exercise', auth, controller.getWorkoutByNameData)
-router.post('/workout', validateWorkout, auth, controller.createWorkoutData)
+router.post('/workout', validateWorkout.validateWorkout, auth, controller.createWorkoutData)
 router.delete('/workout/:exercise', auth, controller.deleteWorkoutData)
-router.patch('/workout', validateWorkout, auth, controller.updateWorkoutData)
+router.patch('/workout', validateWorkout.validateWorkout, auth, controller.updateWorkoutData)
 
 module.exports = router
 
