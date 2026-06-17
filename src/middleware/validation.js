@@ -24,7 +24,9 @@ const validateWorkout = (req, res, next) => {
 }
 
 const validateSignup = (req, res, next) => {
+    // console.log("Sign Up : ")
     const { name, email, password } = req.body
+    // console.log("Sign Up : ", req.body)
     if (!name || !email || !password) {
         return res.status(400).send({
             error: "All fields are required."
@@ -44,6 +46,7 @@ const validateSignup = (req, res, next) => {
 }
 
 const validateSignin = (req, res, next) => {
+    console.log("Inside signin validation:  ")
     const { email, password } = req.body
     if (!email || !password) {
         return res.status(400).send({

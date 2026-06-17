@@ -1,5 +1,5 @@
 const User = require('../models/user_model')
-
+const sharp = require('sharp')
 const signUpUser = async (req, res) => {
     try {
         const existingUser = await User.findOne({
@@ -129,6 +129,297 @@ const logoutAllUser = async (req, res) => {
         })
     }
 }
+
+const uploadAvatar = async (req, res) => {
+    try {
+        console.log("FIle is : ")
+        console.log(req.file)
+        const buffer = await sharp(req.file.buffer)
+            .resize({ width: 250, height: 250 })
+            .png()
+            .toBuffer()
+        req.user.avatar = buffer
+        await req.user.save()
+        res.send({
+            message: 'Avatar uploaded successfully'
+        })
+    } catch (e) {
+        return res.status(400).send({
+            error: e.message
+        })
+    }
+}
+
+const practiceUserMethods = async (req, res) => {
+    try {
+        const stats = await User.aggregate([
+            {
+                $match: {
+                    _id: req.user._id
+                }
+
+            },
+            {
+                $lookup: {
+                    from: 'workouts',
+                    localField: '_id',
+                    foreignField: 'owner',
+                    pipeline: [
+                        // {
+                        //     $match: {
+                        //         reps: {
+                        //             $gt: 10
+                        //         }
+                        //     }
+                        // },
+                        {
+                            $addFields: {
+                                totalVolume: {
+                                    $multiply: [
+                                        '$reps', '$sets'
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                Rank: {
+                                    $switch: {
+                                        branches: [
+                                            {
+                                                case: {
+                                                    $gt: ['$totalVolume', 80]
+                                                },
+                                                then: 'Elite'
+                                            },
+                                            {
+                                                case: {
+                                                    $and: [
+                                                        {
+                                                            $lte: ['$totalVolume', 80]
+                                                        },
+                                                        {
+                                                            $gte: ['$totalVolume', 50]
+                                                        }
+                                                    ]
+                                                },
+                                                then: 'Pro'
+                                            },
+                                        ],
+                                        default: 'Normal'
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                exercise: 1,
+                                Rank: 1,
+                                totalVolume: 1,
+                                reps: 1,
+                                sets: 1
+                            }
+                        }
+                    ],
+                    as: "Workouts"
+                }
+            },
+            // {
+            //     $unwind: '$Workouts'
+            // },
+            // {
+            //     $addFields: {
+            //         Workouts: {
+            //             $filter: {
+            //                 input: '$Workouts',
+            //                 as: 'workout',
+            //                 cond: {
+            //                     $gt: ['$$workouts.reps', 10]
+            //                 }
+            //             }
+            //         }
+            //     }
+            // },
+            {
+                $project: {
+                    _id: 0,
+                    name: 1,
+                    email: 1,
+                    Workouts: 1
+                }
+            },
+        ])
+        if (!stats) {
+            return res.status(404).send({
+                error: "Workout not found"
+            })
+        }
+        return res.status(200).send(stats)
+    } catch (e) {
+        res.status(500).send({
+            error: "Internal server error"
+        })
+    }
+}
+
+
+const getUserStats = async (req, res) => {
+    try {
+
+        // | Syntax   | Meaning                    |
+        // | -------  | -------------------------- |
+        // | '$field' | READ value from field      |
+        // | 'field'  | CREATE / MODIFY field name |
+
+
+        const stats = await User.aggregate([
+            {
+                $match: {
+                    _id: req.user._id
+                }
+            },
+            {
+                $lookup: {
+                    from: 'workouts',  //  target collection name
+                    localField: '_id',  //  take _id from current collection  means User is current collection
+                    foreignField: 'owner',  // match against owner field in workouts collection
+                    pipeline: [  // run aggregation on joined collection
+                        {
+                            $project: {
+                                _id: 0,  // 0 means hide
+                                exercise: 1,  // 1 means show
+                                sets: 1,
+                                reps: 1
+                            }
+                        }
+                    ],
+                    as: 'Workouts'  //  store joined result inside workouts field
+                }
+            },
+            {
+                // Flow is: 
+                // match
+                // → lookup
+                // → unwind
+                // → project
+                $unwind: '$Workouts'   // It breaks array into: separate documents
+            },
+            {
+                $addFields: {
+                    totalReps: {
+                        $multiply: [  //  Performs multiplication
+                            '$Workouts.sets',
+                            '$Workouts.reps'
+                        ]
+                    }
+                }
+            },
+            {
+                $addFields: {   // create new field
+                    performance: {
+                        $cond: {    //  conditions (if, else if)
+                            if: {
+                                $gte: ['$totalReps', 45]
+                            },
+                            then: 'Strong',
+                            else: {
+                                $cond: {
+                                    if: {
+                                        $lte: ['$totalReps', 30]
+                                    },
+                                    then: 'Beginner',
+                                    else: 'Intermediate'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    performanceBySwitchCase: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: {
+                                        $lte: ['$totalReps', 25]
+                                    },
+                                    then: 'Beginner User'
+                                },
+                                {
+                                    case: {
+                                        $and: [
+                                            {
+                                                $gt: ['$totalReps', 25]
+                                            },
+                                            {
+                                                $lt: ['$totalReps', 40]
+                                            }
+                                        ]
+                                    },
+                                    then: 'Intermediate User'
+                                },
+                                {
+                                    case: {
+                                        $and: [
+                                            {
+                                                $gte: ['$totalReps', 40]
+                                            },
+                                            {
+                                                $lt: ['$totalReps', 60]
+                                            }
+                                        ]
+                                    },
+                                    then: "Strong User"
+                                }
+                            ],
+                            default: 'Strongest User'
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {   // modify existing field
+                    'Workouts.exercise': 'Over All'
+                }
+            },
+            // {
+            //     $addFields: {
+            //         totalReps: {
+            //             $multiply: [  //  Performs multiplication
+            //                 '$Workouts.sets',
+            //                 '$Workouts.reps'
+            //             ]
+            //         }
+            //     }
+            // },
+            {
+                $project: {
+                    _id: 0,
+                    name: 1,
+                    email: 1,
+                    Workouts: 1,
+                    performance: 1,
+                    performanceBySwitchCase: 1,
+                    totalReps: 1,
+                }
+            }
+        ])
+
+        console.log("Return Data:  ", stats)
+        if (!stats) {
+            return res.status(404).send({
+                error: "Workout not found"
+            })
+        }
+        return res.status(200).send(stats)
+    } catch (e) {
+        res.status(500).send({
+            error: "Internal server error"
+        })
+    }
+}
 module.exports = {
     signUpUser,
     loginUser,
@@ -136,5 +427,8 @@ module.exports = {
     updateProfile,
     deleteProfile,
     getProfile,
-    logoutAllUser
+    logoutAllUser,
+    uploadAvatar,
+    getUserStats,
+    practiceUserMethods
 }

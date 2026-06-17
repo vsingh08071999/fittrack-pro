@@ -20,11 +20,15 @@ const userSchema = mongoose.Schema({
         trim: true,
         unique: true,
         lowercase: true,
+        index: true,   //Create optimized search structure for this field
         validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error('Invalid email')
             }
         }
+    },
+    avatar: {
+        type: Buffer // Store images as binary data
     },
     tokens: [
         {
