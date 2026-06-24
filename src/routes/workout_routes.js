@@ -4,6 +4,7 @@ const controller = require('../controllers/workout_controller')
 const validateWorkout = require('../middleware/validation')
 const auth = require('../middleware/auth')
 
+router.get('/workout/search',controller.getWorkoutByNameIndex)
 router.get('/workout/practiceAggregate', auth, controller.practiceWorkoutMethods)
 router.get('/workout', auth, controller.getAllWorkoutData)
 router.get('/workout/stats', auth, controller.getWorkoutStats)

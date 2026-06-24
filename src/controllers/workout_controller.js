@@ -526,7 +526,18 @@ const updateWorkout = async (req, res) => {
     }
 }
 
-
+const getWorkoutByNameIndex = async (req, res) => {
+    console.log("Get Workout By Name Index")
+    const workout = await WorkoutModel.find({
+        "exercise": req.body.workout
+    })
+    if (workout.length === 0) {
+        return res.status(404).send({
+            error: 'Workout not found!!!'
+        })
+    }
+    return res.status(200).send(workout)
+}
 
 // yargs.parse()
 // app.listen(port, () => {
@@ -540,5 +551,6 @@ module.exports = {
     deleteWorkoutData: deleteWorkout,
     createWorkoutData: createWorkout,
     getWorkoutStats,
-    practiceWorkoutMethods
+    practiceWorkoutMethods,
+    getWorkoutByNameIndex
 }

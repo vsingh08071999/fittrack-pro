@@ -5,11 +5,13 @@ const workoutRoutes = require('./routes/workout_routes')
 const userRoutes = require('./routes/user_routes')
 const UserModel = require('./models/user_model')
 const mongoose = require('./db/mongoose')
+const errorHandler = require('./middleware/error_handler')
 require('dotenv').config()
 app.use(cors())
 app.use(express.json())
 app.use(workoutRoutes)
 app.use(userRoutes)
+app.use(errorHandler)
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log("Server is running on the port: " + port)

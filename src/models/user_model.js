@@ -6,7 +6,8 @@ const userSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        index: true
     },
     password: {
         type: String,
@@ -29,6 +30,9 @@ const userSchema = mongoose.Schema({
     },
     avatar: {
         type: Buffer // Store images as binary data
+    },
+    avatarContentType: {
+        type: String
     },
     tokens: [
         {

@@ -4,6 +4,7 @@ const workoutSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        index: true,
         lowercase: true
     },
     sets: {
@@ -19,10 +20,15 @@ const workoutSchema = mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
+        index: true,
         ref: 'User'
     },
 }, {
     timestamps: true
+})
+workoutSchema.index({     // MongoDB can jump directly to the finding part without scanning everything.
+    owner: 1,
+    excerise: 1
 })
 
 const Workout = mongoose.model('workout', workoutSchema)
